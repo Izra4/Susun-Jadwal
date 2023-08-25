@@ -9,7 +9,7 @@ import (
 )
 
 func InitDB() (*sql.DB, error) {
-	dbUrl := fmt.Sprintf("%s:%s@tcp(%s)/%s",
+	dbUrl := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true",
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASS"),
 		os.Getenv("DB_HOST"),

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"Susun_Jadwal/db/sqlc"
+	"Susun_Jadwal/models"
 	"Susun_Jadwal/sdk"
 	"Susun_Jadwal/service"
 	"context"
@@ -75,16 +76,36 @@ func (ph *ProdiHandler) GetProdiById(c *gin.Context) {
 		sdk.FailOrError(c, 500, "Class not found", err)
 		return
 	}
-	sdk.Success(c, 200, "Class found", result)
+
+	fixResult := models.ProdiResponse{
+		Id:        int(result.ID),
+		Createdat: result.Createdat.Time,
+		Updatedat: result.Updatedat.Time,
+		Deletedat: result.Deletedat.Time,
+		Name:      result.Name,
+	}
+
+	sdk.Success(c, 200, "Class found", fixResult)
 }
 
 func (ph *ProdiHandler) GetAllProdi(c *gin.Context) {
 	result, err := ph.prodiService.GetAllProdi(context.TODO())
 	if err != nil {
-		// sdk.FailOrError(c, 500, "Failed to get data's", err)
+		sdk.FailOrError(c, 500, "Failed to get data's", err)
 		return
 	}
-	sdk.Success(c, 200, "Succes to get data", result)
+	var fixResult []models.ProdiResponse
+	for _, prodi := range result {
+		fixResult = append(fixResult, models.ProdiResponse{
+			Id:        int(prodi.ID),
+			Createdat: prodi.Createdat.Time,
+			Updatedat: prodi.Updatedat.Time,
+			Deletedat: prodi.Deletedat.Time,
+			Name:      prodi.Name,
+		})
+	}
+
+	sdk.Success(c, 200, "Data Loaded", fixResult)
 }
 
 func (ph *ProdiHandler) UpdateProdi(c *gin.Context) {

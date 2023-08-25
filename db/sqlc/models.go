@@ -30,3 +30,14 @@ type ProgramStudy struct {
 	Deletedat sql.NullTime
 	Name      string
 }
+
+type Subject struct {
+	ID         int32
+	Createdat  sql.NullTime
+	Updatedat  sql.NullTime
+	Deletedat  sql.NullTime
+	Name       string
+	Curriculum string
+	Sks        int32
+	IDProdi    int32
+}

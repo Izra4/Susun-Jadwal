@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Handler(db *sql.DB) (*ClassHandler, *ProdiHandler) {
+func Handler(db *sql.DB) (*ClassHandler, *ProdiHandler, *SubjectHandler) {
 	queries := sqlc.New(db)
 	classRepo := repository.NewClassRepository(queries)
 	classService := service.NewClassService(classRepo)
@@ -20,19 +20,30 @@ func Handler(db *sql.DB) (*ClassHandler, *ProdiHandler) {
 	prodiRepo := repository.NewProdiRepository(queries)
 	prodiServ := service.NewProdiService(prodiRepo)
 	prodiHand := NewProdiHandler(prodiServ)
-	return classHandler, prodiHand
+
+	subjectRepo := repository.NewSubjectRepository(queries)
+	subjectServ := service.NewSubjectService(subjectRepo)
+	subjectHand := NewSubjectHandler(subjectServ)
+	return classHandler, prodiHand, subjectHand
 }
 
-func route(r *gin.Engine, ch *ClassHandler, ph *ProdiHandler) {
+func route(r *gin.Engine, ch *ClassHandler, ph *ProdiHandler, sh *SubjectHandler) {
 	r.POST("/add-class", ch.CreateClass)
 	r.GET("/get-class", ch.GetAllClass)
 	r.DELETE("/delete-class", ch.DeleteClass)
 
-	r.POST("/add-program-study", ph.CreateProdi)
 	r.GET("/get-class-by-id/:id", ph.GetProdiById)
 	r.GET("/list-program", ph.GetAllProdi)
+	r.POST("/add-program-study", ph.CreateProdi)
 	r.PATCH("/update-prodi/:id", ph.UpdateProdi)
 	r.DELETE("/delete-program-study", ph.DeleteProdi)
+
+	r.GET("/get-all-subjects", sh.GetAllSubjects)
+	r.GET("get-subject-by-id", sh.GetSubjectById)
+	r.POST("/add-subject", sh.CreateSubject)
+	r.PATCH("/update-subject/:id", sh.UpdateSubject)
+	r.DELETE("/delete-subject/:id", sh.DeleteSubject)
+
 }
 
 func StartEngine() {
@@ -46,9 +57,9 @@ func StartEngine() {
 	}
 	defer db.Close()
 
-	ch, ph := Handler(db)
+	ch, ph, sh := Handler(db)
 
 	r := gin.Default()
-	route(r, ch, ph)
+	route(r, ch, ph, sh)
 	r.Run()
 }

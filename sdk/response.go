@@ -1,6 +1,10 @@
 package sdk
 
-import "github.com/gin-gonic/gin"
+import (
+	"log"
+
+	"github.com/gin-gonic/gin"
+)
 
 func Success(c *gin.Context, code int, msg string, data interface{}) {
 	switch code / 100 {
@@ -29,6 +33,7 @@ func FailOrError(c *gin.Context, httpCode int, msg string, err error) {
 			},
 		})
 	case 5: //ERROR 5xx
+		log.Println(err)
 		c.JSON(httpCode, gin.H{
 			"status":  "error",
 			"message": msg,
@@ -60,4 +65,11 @@ func Fail(c *gin.Context, httpCode int, msg string) {
 			"message": "RESPONSE ERROR",
 		})
 	}
+}
+
+func FailEmptyField(c *gin.Context) {
+	c.JSON(400, gin.H{
+		"status":  "fail",
+		"message": "Please fill the empty field",
+	})
 }
