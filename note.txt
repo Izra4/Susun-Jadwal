@@ -1,0 +1,14 @@
+migrate -path <path> -database "<dsn>" -verbose up
+migrate -path <path> -database "<dsn>" -verbose down
+migrate -path <path> -database "<dsn>" force VERSION // versionnya itu angka awal di file migrations
+
+
+migrate create -ext sql -dir internal/db/migrations nama_file_migration
+namanya bisa: create_table_... blablabla
+
+up:
+migrate -path internal/db/migrations -database "mysql://root:@tcp(127.0.0.1:3306)/belijualbeli" -verbose up
+down:
+migrate -database "mysql://root:Qz8750kzx@tcp(localhost:3306)/susun_jadwal" -path db/migrations down
+fix: (dirty)
+migrate -path internal/db/migrations -database "mysql://root:@tcp(localhost:3306)/belijualbeli" force VERSION
