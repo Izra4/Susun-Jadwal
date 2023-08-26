@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func Handler(db *sql.DB) (*ClassHandler, *ProdiHandler, *SubjectHandler) {
+func Handler(db *sql.DB) (*ClassHandler, *ProdiHandler, *SubjectHandler, *ScheduleHandler) {
 	queries := sqlc.New(db)
 	classRepo := repository.NewClassRepository(queries)
 	classService := service.NewClassService(classRepo)
@@ -24,10 +24,15 @@ func Handler(db *sql.DB) (*ClassHandler, *ProdiHandler, *SubjectHandler) {
 	subjectRepo := repository.NewSubjectRepository(queries)
 	subjectServ := service.NewSubjectService(subjectRepo)
 	subjectHand := NewSubjectHandler(subjectServ)
-	return classHandler, prodiHand, subjectHand
+
+	scheduleRepo := repository.NewScheduleRepository(queries)
+	scheduleServ := service.NewScheduleService(scheduleRepo)
+	scheduleHand := NewScheduleHandler(scheduleServ)
+
+	return classHandler, prodiHand, subjectHand, scheduleHand
 }
 
-func route(r *gin.Engine, ch *ClassHandler, ph *ProdiHandler, sh *SubjectHandler) {
+func route(r *gin.Engine, ch *ClassHandler, ph *ProdiHandler, sh *SubjectHandler, shh *ScheduleHandler) {
 	r.GET("/get-classes", ch.GetAllClasses)
 	r.GET("/get-class/:id", ch.GetClassById)
 	r.POST("/add-class", ch.CreateClass)
@@ -41,10 +46,16 @@ func route(r *gin.Engine, ch *ClassHandler, ph *ProdiHandler, sh *SubjectHandler
 	r.DELETE("/delete-program-study", ph.DeleteProdi)
 
 	r.GET("/get-all-subjects", sh.GetAllSubjects)
-	r.GET("get-subject-by-id", sh.GetSubjectById)
+	r.GET("/get-subject-by-id/:id", sh.GetSubjectById)
 	r.POST("/add-subject", sh.CreateSubject)
 	r.PATCH("/update-subject/:id", sh.UpdateSubject)
 	r.DELETE("/delete-subject/:id", sh.DeleteSubject)
+
+	r.GET("/get-all-schedules", shh.GetSchedules)
+	r.GET("/get-schedule-by-id/:id", shh.GetScheduleByID)
+	r.POST("/add-schedule", shh.CreateSchedule)
+	r.PATCH("/update-schedule", shh.UpdateSchedule)
+	r.DELETE("/delete-schedule", shh.DeleteSchedule)
 
 }
 
@@ -59,9 +70,9 @@ func StartEngine() {
 	}
 	defer db.Close()
 
-	ch, ph, sh := Handler(db)
+	ch, ph, sh, shh := Handler(db)
 
 	r := gin.Default()
-	route(r, ch, ph, sh)
+	route(r, ch, ph, sh, shh)
 	r.Run()
 }
