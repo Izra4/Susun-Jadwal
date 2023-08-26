@@ -18,14 +18,6 @@ type Class struct {
 	SubjectID int32
 }
 
-type MajorSchedule struct {
-	ID      int32
-	Day     string
-	Time    string
-	Room    string
-	ClassID int32
-}
-
 type ProgramStudy struct {
 	ID        int32
 	Createdat sql.NullTime
@@ -43,4 +35,15 @@ type Subject struct {
 	Curriculum string
 	Sks        int32
 	IDProdi    int32
+}
+
+type SubjectSchedule struct {
+	ID        int32
+	Day       string
+	Time      string
+	Room      string
+	ClassID   int32
+	Createdat sql.NullTime
+	Updatedat sql.NullTime
+	Deletedat sql.NullTime
 }
