@@ -47,3 +47,14 @@ type SubjectSchedule struct {
 	Updatedat sql.NullTime
 	Deletedat sql.NullTime
 }
+
+type User struct {
+	ID        int32
+	Createdat sql.NullTime
+	Updatedat sql.NullTime
+	Deletedat sql.NullTime
+	Email     string
+	Name      string
+	Nim       string
+	IDProdi   int32
+}
