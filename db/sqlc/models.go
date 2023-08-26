@@ -18,6 +18,15 @@ type Class struct {
 	SubjectID int32
 }
 
+type Kr struct {
+	ID        int32
+	Createdat sql.NullTime
+	Updatedat sql.NullTime
+	Deletedat sql.NullTime
+	Totals    int32
+	Userid    int32
+}
+
 type ProgramStudy struct {
 	ID        int32
 	Createdat sql.NullTime
