@@ -9,10 +9,13 @@ import (
 )
 
 type Class struct {
-	ID      int32
-	Name    string
-	Member  int32
-	MajorID int32
+	ID        int32
+	Name      string
+	Member    int32
+	Createdat sql.NullTime
+	Updatedat sql.NullTime
+	Deletedat sql.NullTime
+	SubjectID int32
 }
 
 type MajorSchedule struct {

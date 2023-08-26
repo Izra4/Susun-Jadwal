@@ -33,14 +33,22 @@ func (sh *SubjectHandler) CreateSubject(c *gin.Context) {
 		sdk.FailEmptyField(c)
 		return
 	}
-	sks := sdk.ConvertStr(sksStr, c)
+	sks, ok := sdk.ConvertStr(sksStr, c)
+	if ok != nil {
+		sdk.FailOrError(c, 500, "Failed to convert", ok)
+		return
+	}
 
 	idProdiStr := c.PostForm("idProdi")
 	if idProdiStr == "" {
 		sdk.FailEmptyField(c)
 		return
 	}
-	idProdi := sdk.ConvertStr(idProdiStr, c)
+	idProdi, ok := sdk.ConvertStr(idProdiStr, c)
+	if ok != nil {
+		sdk.FailOrError(c, 500, "Failed to convert", ok)
+		return
+	}
 	req := models.SubjectReq{
 		Name:       name,
 		Curriculum: curriculum,
@@ -79,7 +87,11 @@ func (sh *SubjectHandler) GetAllSubjects(c *gin.Context) {
 
 func (sh *SubjectHandler) GetSubjectById(c *gin.Context) {
 	idStr := c.Param("id")
-	id := sdk.ConvertStr(idStr, c)
+	id, ok := sdk.ConvertStr(idStr, c)
+	if ok != nil {
+		sdk.FailOrError(c, 500, "Failed to convert", ok)
+		return
+	}
 	result, err := sh.subjectService.GetSubjectById(context.Background(), int32(id))
 	if err != nil {
 		sdk.FailOrError(c, 500, "Failed to get data", err)
@@ -101,7 +113,11 @@ func (sh *SubjectHandler) GetSubjectById(c *gin.Context) {
 
 func (sh *SubjectHandler) UpdateSubject(c *gin.Context) {
 	idStr := c.Param("id")
-	id := sdk.ConvertStr(idStr, c)
+	id, ok := sdk.ConvertStr(idStr, c)
+	if ok != nil {
+		sdk.FailOrError(c, 500, "Failed to convert", ok)
+		return
+	}
 	result, err := sh.subjectService.GetSubjectById(context.Background(), int32(id))
 	if err != nil {
 		sdk.FailOrError(c, 500, "Failed to get data", err)
@@ -122,7 +138,7 @@ func (sh *SubjectHandler) UpdateSubject(c *gin.Context) {
 	}
 	newSksStr := c.PostForm("sks")
 	newSks := 0
-	ok := err
+	ok = err
 	if newSksStr == "" {
 		newSksStr = strconv.Itoa(int(oldSks))
 		newSks, ok = strconv.Atoi(newSksStr)
@@ -131,7 +147,11 @@ func (sh *SubjectHandler) UpdateSubject(c *gin.Context) {
 			return
 		}
 	} else {
-		newSks = sdk.ConvertStr(newSksStr, c)
+		newSks, ok = sdk.ConvertStr(newSksStr, c)
+		if ok != nil {
+			sdk.FailOrError(c, 500, "Failed to convert", ok)
+			return
+		}
 	}
 
 	newIdProdiStr := c.PostForm("idProdi")
@@ -144,7 +164,11 @@ func (sh *SubjectHandler) UpdateSubject(c *gin.Context) {
 			return
 		}
 	} else {
-		newIdProdi = sdk.ConvertStr(newIdProdiStr, c)
+		newIdProdi, ok = sdk.ConvertStr(newIdProdiStr, c)
+		if ok != nil {
+			sdk.FailOrError(c, 500, "Failed to convert", ok)
+			return
+		}
 	}
 
 	req := models.SubjectReq{
@@ -165,7 +189,11 @@ func (sh *SubjectHandler) UpdateSubject(c *gin.Context) {
 
 func (sh *SubjectHandler) DeleteSubject(c *gin.Context) {
 	idStr := c.Param("id")
-	id := sdk.ConvertStr(idStr, c)
+	id, ok := sdk.ConvertStr(idStr, c)
+	if ok != nil {
+		sdk.FailOrError(c, 500, "Failed to convert", ok)
+		return
+	}
 	result, err := sh.subjectService.GetSubjectById(context.Background(), int32(id))
 	if err != nil {
 		sdk.FailOrError(c, 500, "Failed to get data", err)

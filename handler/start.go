@@ -28,9 +28,11 @@ func Handler(db *sql.DB) (*ClassHandler, *ProdiHandler, *SubjectHandler) {
 }
 
 func route(r *gin.Engine, ch *ClassHandler, ph *ProdiHandler, sh *SubjectHandler) {
+	r.GET("/get-classes", ch.GetAllClasses)
+	r.GET("/get-class/:id", ch.GetClassById)
 	r.POST("/add-class", ch.CreateClass)
-	r.GET("/get-class", ch.GetAllClass)
-	r.DELETE("/delete-class", ch.DeleteClass)
+	r.PATCH("/update-class/:id", ch.UpdateClass)
+	r.DELETE("/delete-class/:id", ch.DeleteClass)
 
 	r.GET("/get-class-by-id/:id", ph.GetProdiById)
 	r.GET("/list-program", ph.GetAllProdi)

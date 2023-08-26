@@ -7,12 +7,11 @@ import (
 )
 
 type ClassRepository interface {
-	CreateClass(ctx context.Context, class sqlc.AddNewClassParams) (sql.Result, error)
+	AddNewClass(ctx context.Context, arg sqlc.AddNewClassParams) (sql.Result, error)
 	DeleteClass(ctx context.Context, id int32) error
-	GetClassNameById(ctx context.Context, id int32) (string, error)
 	GetClassById(ctx context.Context, id int32) (sqlc.Class, error)
-	GetClassByName(ctx context.Context, name string) ([]sqlc.Class, error)
-	GetListClass(ctx context.Context) ([]sqlc.Class, error)
+	ListClass(ctx context.Context) ([]sqlc.Class, error)
+	UpdateClass(ctx context.Context, arg sqlc.UpdateClassParams) error
 }
 
 type classRepository struct {
@@ -23,24 +22,22 @@ func NewClassRepository(db *sqlc.Queries) ClassRepository {
 	return &classRepository{db}
 }
 
-func (r *classRepository) CreateClass(ctx context.Context, class sqlc.AddNewClassParams) (sql.Result, error) {
-	return r.db.AddNewClass(ctx, class)
+func (c *classRepository) AddNewClass(ctx context.Context, arg sqlc.AddNewClassParams) (sql.Result, error) {
+	return c.db.AddNewClass(ctx, arg)
 }
 
-func (r *classRepository) DeleteClass(ctx context.Context, id int32) error {
-	return r.db.DeleteClass(ctx, id)
+func (c *classRepository) DeleteClass(ctx context.Context, id int32) error {
+	return c.db.DeleteClass(ctx, id)
 }
 
-func (r *classRepository) GetClassNameById(ctx context.Context, id int32) (string, error) {
-	return r.db.GetClassNameById(ctx, id)
+func (c *classRepository) GetClassById(ctx context.Context, id int32) (sqlc.Class, error) {
+	return c.db.GetClassById(ctx, id)
 }
 
-func (r *classRepository) GetClassById(ctx context.Context, id int32) (sqlc.Class, error) {
-	return r.db.GetClassById(ctx, id)
+func (c *classRepository) ListClass(ctx context.Context) ([]sqlc.Class, error) {
+	return c.db.ListClass(ctx)
 }
-func (r *classRepository) GetClassByName(ctx context.Context, name string) ([]sqlc.Class, error) {
-	return r.db.GetClassByName(ctx, name)
-}
-func (r *classRepository) GetListClass(ctx context.Context) ([]sqlc.Class, error) {
-	return r.db.ListClass(ctx)
+
+func (c *classRepository) UpdateClass(ctx context.Context, arg sqlc.UpdateClassParams) error {
+	return c.db.UpdateClass(ctx, arg)
 }

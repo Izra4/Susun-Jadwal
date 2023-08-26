@@ -11,18 +11,18 @@ import (
 )
 
 const addNewClass = `-- name: AddNewClass :execresult
-INSERT INTO classes(name,member,major_id)
+INSERT INTO classes(name,member,subject_id)
     VALUES (?,?,?)
 `
 
 type AddNewClassParams struct {
-	Name    string
-	Member  int32
-	MajorID int32
+	Name      string
+	Member    int32
+	SubjectID int32
 }
 
 func (q *Queries) AddNewClass(ctx context.Context, arg AddNewClassParams) (sql.Result, error) {
-	return q.db.ExecContext(ctx, addNewClass, arg.Name, arg.Member, arg.MajorID)
+	return q.db.ExecContext(ctx, addNewClass, arg.Name, arg.Member, arg.SubjectID)
 }
 
 const deleteClass = `-- name: DeleteClass :exec
@@ -36,8 +36,8 @@ func (q *Queries) DeleteClass(ctx context.Context, id int32) error {
 }
 
 const getClassById = `-- name: GetClassById :one
-SELECT id, name, member, major_id FROM classes
-WHERE id = ? LIMIT 1
+SELECT id, name, member, createdat, updatedat, deletedat, subject_id FROM classes
+WHERE id = ?
 `
 
 func (q *Queries) GetClassById(ctx context.Context, id int32) (Class, error) {
@@ -47,91 +47,16 @@ func (q *Queries) GetClassById(ctx context.Context, id int32) (Class, error) {
 		&i.ID,
 		&i.Name,
 		&i.Member,
-		&i.MajorID,
+		&i.Createdat,
+		&i.Updatedat,
+		&i.Deletedat,
+		&i.SubjectID,
 	)
 	return i, err
 }
 
-const getClassByMajorId = `-- name: GetClassByMajorId :many
-SELECT id, name, member, major_id FROM classes
-WHERE major_id = ?
-`
-
-func (q *Queries) GetClassByMajorId(ctx context.Context, majorID int32) ([]Class, error) {
-	rows, err := q.db.QueryContext(ctx, getClassByMajorId, majorID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Class
-	for rows.Next() {
-		var i Class
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Member,
-			&i.MajorID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getClassByName = `-- name: GetClassByName :many
-SELECT id, name, member, major_id FROM classes
-WHERE name = ?
-`
-
-func (q *Queries) GetClassByName(ctx context.Context, name string) ([]Class, error) {
-	rows, err := q.db.QueryContext(ctx, getClassByName, name)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Class
-	for rows.Next() {
-		var i Class
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Member,
-			&i.MajorID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getClassNameById = `-- name: GetClassNameById :one
-SELECT name FROM classes
-WHERE id = ?
-`
-
-func (q *Queries) GetClassNameById(ctx context.Context, id int32) (string, error) {
-	row := q.db.QueryRowContext(ctx, getClassNameById, id)
-	var name string
-	err := row.Scan(&name)
-	return name, err
-}
-
 const listClass = `-- name: ListClass :many
-SELECT id, name, member, major_id FROM classes
+SELECT id, name, member, createdat, updatedat, deletedat, subject_id FROM classes
 ORDER BY name
 `
 
@@ -148,7 +73,10 @@ func (q *Queries) ListClass(ctx context.Context) ([]Class, error) {
 			&i.ID,
 			&i.Name,
 			&i.Member,
-			&i.MajorID,
+			&i.Createdat,
+			&i.Updatedat,
+			&i.Deletedat,
+			&i.SubjectID,
 		); err != nil {
 			return nil, err
 		}
@@ -161,4 +89,27 @@ func (q *Queries) ListClass(ctx context.Context) ([]Class, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateClass = `-- name: UpdateClass :exec
+UPDATE classes
+    SET name = ?, member = ?, subject_id = ?
+    WHERE id = ?
+`
+
+type UpdateClassParams struct {
+	Name      string
+	Member    int32
+	SubjectID int32
+	ID        int32
+}
+
+func (q *Queries) UpdateClass(ctx context.Context, arg UpdateClassParams) error {
+	_, err := q.db.ExecContext(ctx, updateClass,
+		arg.Name,
+		arg.Member,
+		arg.SubjectID,
+		arg.ID,
+	)
+	return err
 }

@@ -2,18 +2,18 @@ package service
 
 import (
 	"Susun_Jadwal/db/sqlc"
+	"Susun_Jadwal/models"
 	"Susun_Jadwal/repository"
 	"context"
 	"database/sql"
 )
 
 type ClassService interface {
-	CreateClass(ctx context.Context, class sqlc.AddNewClassParams) (sql.Result, error)
+	AddNewClass(ctx context.Context, arg models.ClassAddReq) (sql.Result, error)
 	DeleteClass(ctx context.Context, id int32) error
-	GetClassNameById(ctx context.Context, id int32) (string, error)
 	GetClassById(ctx context.Context, id int32) (sqlc.Class, error)
-	GetClassByName(ctx context.Context, name string) ([]sqlc.Class, error)
-	GetListClass(ctx context.Context) ([]sqlc.Class, error)
+	ListClass(ctx context.Context) ([]sqlc.Class, error)
+	UpdateClass(ctx context.Context, arg models.ClassUpdateReq) error
 }
 
 type classService struct {
@@ -24,23 +24,34 @@ func NewClassService(repo repository.ClassRepository) ClassService {
 	return &classService{repo}
 }
 
-func (s *classService) CreateClass(ctx context.Context, class sqlc.AddNewClassParams) (sql.Result, error) {
-	return s.repo.CreateClass(ctx, class)
+func (c *classService) AddNewClass(ctx context.Context, arg models.ClassAddReq) (sql.Result, error) {
+	req := sqlc.AddNewClassParams{
+		Name:      arg.Name,
+		Member:    int32(arg.Member),
+		SubjectID: int32(arg.SubjectId),
+	}
+
+	return c.repo.AddNewClass(ctx, req)
 }
 
-func (s *classService) DeleteClass(ctx context.Context, id int32) error {
-	return s.repo.DeleteClass(ctx, id)
+func (c *classService) DeleteClass(ctx context.Context, id int32) error {
+	return c.repo.DeleteClass(ctx, id)
 }
 
-func (s *classService) GetClassNameById(ctx context.Context, id int32) (string, error) {
-	return s.repo.GetClassNameById(ctx, id)
+func (c *classService) GetClassById(ctx context.Context, id int32) (sqlc.Class, error) {
+	return c.repo.GetClassById(ctx, id)
 }
-func (s *classService) GetClassById(ctx context.Context, id int32) (sqlc.Class, error) {
-	return s.repo.GetClassById(ctx, id)
+
+func (c *classService) ListClass(ctx context.Context) ([]sqlc.Class, error) {
+	return c.repo.ListClass(ctx)
 }
-func (s *classService) GetClassByName(ctx context.Context, name string) ([]sqlc.Class, error) {
-	return s.repo.GetClassByName(ctx, name)
-}
-func (s *classService) GetListClass(ctx context.Context) ([]sqlc.Class, error) {
-	return s.repo.GetListClass(ctx)
+
+func (c *classService) UpdateClass(ctx context.Context, arg models.ClassUpdateReq) error {
+	req := sqlc.UpdateClassParams{
+		Name:      arg.Name,
+		Member:    arg.Member,
+		SubjectID: arg.SubjectID,
+		ID:        arg.ID,
+	}
+	return c.repo.UpdateClass(ctx, req)
 }
