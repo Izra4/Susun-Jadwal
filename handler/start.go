@@ -1,42 +1,13 @@
 package handler
 
 import (
-	"Susun_Jadwal/db/sqlc"
-	"Susun_Jadwal/initializers"
-	"Susun_Jadwal/repository"
-	"Susun_Jadwal/service"
 	"database/sql"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
-func Handler(db *sql.DB) (*ClassHandler, *ProdiHandler, *SubjectHandler, *ScheduleHandler, *UserHandler) {
-	queries := sqlc.New(db)
-	classRepo := repository.NewClassRepository(queries)
-	classService := service.NewClassService(classRepo)
-	classHandler := NewClassHandler(classService)
-
-	prodiRepo := repository.NewProdiRepository(queries)
-	prodiServ := service.NewProdiService(prodiRepo)
-	prodiHand := NewProdiHandler(prodiServ)
-
-	subjectRepo := repository.NewSubjectRepository(queries)
-	subjectServ := service.NewSubjectService(subjectRepo)
-	subjectHand := NewSubjectHandler(subjectServ)
-
-	scheduleRepo := repository.NewScheduleRepository(queries)
-	scheduleServ := service.NewScheduleService(scheduleRepo)
-	scheduleHand := NewScheduleHandler(scheduleServ)
-
-	userRepo := repository.NewUserRepository(queries)
-	userServ := service.NewUserService(userRepo)
-	userHand := NewUserHandler(userServ)
-	return classHandler, prodiHand, subjectHand, scheduleHand, userHand
-}
-
 func route(r *gin.Engine, ch *ClassHandler, ph *ProdiHandler, sh *SubjectHandler,
-	shh *ScheduleHandler, uh *UserHandler) {
+	shh *ScheduleHandler, uh *UserHandler, kh *KrsHandler) {
 	r.GET("/get-classes", ch.GetAllClasses)
 	r.GET("/get-class/:id", ch.GetClassById)
 	r.POST("/add-class", ch.CreateClass)
@@ -66,22 +37,16 @@ func route(r *gin.Engine, ch *ClassHandler, ph *ProdiHandler, sh *SubjectHandler
 	r.POST("/add-user", uh.CreateUser)
 	r.PATCH("/update-user/:id", uh.UpdateUser)
 	r.DELETE("/delete-user/:id", uh.DeleteUser)
+
+	r.GET("/get-krs", kh.GetAllKrs)
+	r.GET("/get-krs-by-id/:id", kh.GetKrsById)
+	r.GET("/get-krs-by-user-id", kh.GetKrsByUserId)
+	r.POST("/add-krs", kh.AddKrs)
+	r.PATCH("/update-krs", kh.UpdateKrs)
+	r.DELETE("/delete-krs", kh.DeleteKrs)
 }
 
-func StartEngine() {
-	err := godotenv.Load()
-	if err != nil {
-		panic(err)
-	}
-	db, err := initializers.InitDB()
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	ch, ph, sh, shh, uh := Handler(db)
-
-	r := gin.Default()
-	route(r, ch, ph, sh, shh, uh)
-	r.Run()
+func StartEngine(r *gin.Engine, db *sql.DB) {
+	ch, ph, sh, shh, uh, kh := InitHandler(db)
+	route(r, ch, ph, sh, shh, uh, kh)
 }

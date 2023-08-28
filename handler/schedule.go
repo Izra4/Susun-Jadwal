@@ -2,8 +2,8 @@ package handler
 
 import (
 	"Susun_Jadwal/models"
-	"Susun_Jadwal/sdk"
 	"Susun_Jadwal/service"
+	"Susun_Jadwal/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"
@@ -20,27 +20,27 @@ func NewScheduleHandler(scheduleService service.ScheduleService) *ScheduleHandle
 func (sh *ScheduleHandler) CreateSchedule(c *gin.Context) {
 	day := c.PostForm("day")
 	if day == "" {
-		sdk.FailEmptyField(c)
+		util.ErrorEmptyField(c)
 		return
 	}
 	time := c.PostForm("time")
 	if time == "" {
-		sdk.FailEmptyField(c)
+		util.ErrorEmptyField(c)
 		return
 	}
 	room := c.PostForm("room")
 	if room == "" {
-		sdk.FailEmptyField(c)
+		util.ErrorEmptyField(c)
 		return
 	}
 	classIdStr := c.PostForm("classId")
 	if classIdStr == "" {
-		sdk.FailEmptyField(c)
+		util.ErrorEmptyField(c)
 		return
 	}
 	classId, ok := strconv.Atoi(classIdStr)
 	if ok != nil {
-		sdk.FailOrError(c, 500, "Failed to convert", ok)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to convert", ok)
 		return
 	}
 
@@ -52,16 +52,16 @@ func (sh *ScheduleHandler) CreateSchedule(c *gin.Context) {
 	}
 
 	if _, err := sh.scheduleService.CreateNewSubjectSchedules(input); err != nil {
-		sdk.FailOrError(c, 500, "Failed to create new schedule", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to create new schedule", err)
 		return
 	}
-	sdk.Success(c, 200, "Succes to create new schedule", input)
+	util.HttpSuccessResponse(c, 200, "Succes to create new schedule", input)
 }
 
 func (sh *ScheduleHandler) GetSchedules(c *gin.Context) {
 	result, err := sh.scheduleService.ListAllMajorSchedules()
 	if err != nil {
-		sdk.FailOrError(c, 500, "Failed to load data's", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to load data's", err)
 		return
 	}
 
@@ -79,20 +79,20 @@ func (sh *ScheduleHandler) GetSchedules(c *gin.Context) {
 			ClassId:   int(datas.ClassID),
 		})
 	}
-	sdk.Success(c, 200, "Succes to get data's", fixResult)
+	util.HttpSuccessResponse(c, 200, "Succes to get data's", fixResult)
 }
 
 func (sh *ScheduleHandler) GetScheduleByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, ok := strconv.Atoi(idStr)
 	if ok != nil {
-		sdk.FailOrError(c, 500, "Failed to convert", ok)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to convert", ok)
 		return
 	}
 
 	result, err := sh.scheduleService.GetSchedulesById(int32(id))
 	if err != nil {
-		sdk.FailOrError(c, 500, "Failed to get data", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
 		return
 	}
 
@@ -107,19 +107,19 @@ func (sh *ScheduleHandler) GetScheduleByID(c *gin.Context) {
 		ClassId:   int(result.ClassID),
 	}
 
-	sdk.Success(c, 200, "Data found", fixResult)
+	util.HttpSuccessResponse(c, 200, "Data found", fixResult)
 }
 
 func (sh *ScheduleHandler) UpdateSchedule(c *gin.Context) {
 	idStr := c.Param("id")
 	id, ok := strconv.Atoi(idStr)
 	if ok != nil {
-		sdk.FailOrError(c, 500, "Failed to convert", ok)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to convert", ok)
 		return
 	}
 	data, err := sh.scheduleService.GetSchedulesById(int32(id))
 	if err != nil {
-		sdk.FailOrError(c, 500, "Failed to get data", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
 		return
 	}
 	oldDay := data.Day
@@ -147,7 +147,7 @@ func (sh *ScheduleHandler) UpdateSchedule(c *gin.Context) {
 	} else {
 		newClassId, ok = strconv.Atoi(newClassIdStr)
 		if ok != nil {
-			sdk.FailOrError(c, 500, "Failed to convert", err)
+			util.HttpFailOrErrorResponse(c, 500, "Failed to convert", err)
 			return
 		}
 	}
@@ -160,22 +160,22 @@ func (sh *ScheduleHandler) UpdateSchedule(c *gin.Context) {
 	}
 
 	if err = sh.scheduleService.UpdateSchedule(input); err != nil {
-		sdk.FailOrError(c, 500, "Failed to update data", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to update data", err)
 		return
 	}
-	sdk.Success(c, 200, "Succes to update data", input)
+	util.HttpSuccessResponse(c, 200, "Succes to update data", input)
 }
 
 func (sh *ScheduleHandler) DeleteSchedule(c *gin.Context) {
 	idStr := c.Param("id")
 	id, ok := strconv.Atoi(idStr)
 	if ok != nil {
-		sdk.FailOrError(c, 500, "Failed to convert", ok)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to convert", ok)
 		return
 	}
 	result, err := sh.scheduleService.GetSchedulesById(int32(id))
 	if err != nil {
-		sdk.FailOrError(c, 500, "Failed to get data", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
 		return
 	}
 	name := result.Room
@@ -183,10 +183,10 @@ func (sh *ScheduleHandler) DeleteSchedule(c *gin.Context) {
 	classId := result.ClassID
 
 	if err = sh.scheduleService.DeleteSchedule(int32(id)); err != nil {
-		sdk.FailOrError(c, 500, "Failed to delete a class", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to delete a class", err)
 		return
 	}
-	sdk.Success(c, 200, "Data deleted", gin.H{
+	util.HttpSuccessResponse(c, 200, "Data deleted", gin.H{
 		"message": fmt.Sprintf("Class %s with time %s (class id: %d) is successfully deleted", name, time, classId),
 	})
 }

@@ -2,8 +2,8 @@ package handler
 
 import (
 	"Susun_Jadwal/models"
-	"Susun_Jadwal/sdk"
 	"Susun_Jadwal/service"
+	"Susun_Jadwal/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"
@@ -20,30 +20,30 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 func (uh *UserHandler) CreateUser(c *gin.Context) {
 	email := c.PostForm("email")
 	if email == "" {
-		sdk.FailEmptyField(c)
+		util.ErrorEmptyField(c)
 		return
 	}
 
 	name := c.PostForm("name")
 	if name == "" {
-		sdk.FailEmptyField(c)
+		util.ErrorEmptyField(c)
 		return
 	}
 
 	nim := c.PostForm("nim")
 	if nim == "" {
-		sdk.FailEmptyField(c)
+		util.ErrorEmptyField(c)
 		return
 	}
 
 	prodiIDStr := c.PostForm("idProdi")
 	if prodiIDStr == "" {
-		sdk.FailEmptyField(c)
+		util.ErrorEmptyField(c)
 		return
 	}
 	prodiID, ok := strconv.Atoi(prodiIDStr)
 	if ok != nil {
-		sdk.FailOrError(c, 500, "Failed to convert", ok)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to convert", ok)
 		return
 	}
 	input := models.UserAddReq{
@@ -53,22 +53,22 @@ func (uh *UserHandler) CreateUser(c *gin.Context) {
 		IDProdi: int32(prodiID),
 	}
 	if _, err := uh.userService.CreateUser(input); err != nil {
-		sdk.FailOrError(c, 500, "Failed to create user", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to create user", err)
 		return
 	}
-	sdk.Success(c, 200, "Success to create data", input)
+	util.HttpSuccessResponse(c, 200, "Success to create data", input)
 }
 
 func (uh *UserHandler) UpdateUser(c *gin.Context) {
 	idStr := c.Param("id")
 	id, ok := strconv.Atoi(idStr)
 	if ok != nil {
-		sdk.FailOrError(c, 500, "Faileed to convert", ok)
+		util.HttpFailOrErrorResponse(c, 500, "Faileed to convert", ok)
 		return
 	}
 	result, err := uh.userService.GetUsersByID(int32(id))
 	if err != nil {
-		sdk.FailOrError(c, 500, "Failed to get data", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
 		return
 	}
 	oldEmail := result.Email
@@ -95,7 +95,7 @@ func (uh *UserHandler) UpdateUser(c *gin.Context) {
 	} else {
 		newIdProdi, ok = strconv.Atoi(newIdProdiStr)
 		if ok != nil {
-			sdk.FailOrError(c, 500, "Failed to convert", err)
+			util.HttpFailOrErrorResponse(c, 500, "Failed to convert", err)
 			return
 		}
 	}
@@ -107,16 +107,16 @@ func (uh *UserHandler) UpdateUser(c *gin.Context) {
 		ID:      int32(id),
 	}
 	if err = uh.userService.UpdateUser(input); err != nil {
-		sdk.FailOrError(c, 500, "Failed to update data", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to update data", err)
 		return
 	}
-	sdk.Success(c, 200, "Success to update data", input)
+	util.HttpSuccessResponse(c, 200, "Success to update data", input)
 }
 
 func (uh *UserHandler) GetAllUsers(c *gin.Context) {
 	result, err := uh.userService.GetAllUsers()
 	if err != nil {
-		sdk.FailOrError(c, 500, "Failed to get data", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
 		return
 	}
 
@@ -133,19 +133,19 @@ func (uh *UserHandler) GetAllUsers(c *gin.Context) {
 			IDProdi:   datas.IDProdi,
 		})
 	}
-	sdk.Success(c, 200, "Success to get data", fixResult)
+	util.HttpSuccessResponse(c, 200, "Success to get data", fixResult)
 }
 
 func (uh *UserHandler) GetUserById(c *gin.Context) {
 	idStr := c.Param("id")
 	id, ok := strconv.Atoi(idStr)
 	if ok != nil {
-		sdk.FailOrError(c, 500, "Failed to convert", ok)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to convert", ok)
 		return
 	}
 	result, err := uh.userService.GetUsersByID(int32(id))
 	if err != nil {
-		sdk.FailOrError(c, 500, "Failed to get data", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
 		return
 	}
 
@@ -160,27 +160,27 @@ func (uh *UserHandler) GetUserById(c *gin.Context) {
 		IDProdi:   result.IDProdi,
 	}
 
-	sdk.Success(c, 200, "Succes to get data", fixResult)
+	util.HttpSuccessResponse(c, 200, "Succes to get data", fixResult)
 }
 
 func (uh *UserHandler) DeleteUser(c *gin.Context) {
 	idStr := c.Param("id")
 	id, ok := strconv.Atoi(idStr)
 	if ok != nil {
-		sdk.FailOrError(c, 500, "Failed to convert", ok)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to convert", ok)
 		return
 	}
 	result, err := uh.userService.GetUsersByID(int32(id))
 	if err != nil {
-		sdk.FailOrError(c, 500, "Failed to get data", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
 		return
 	}
 	email := result.Email
 	if err = uh.userService.DeleteUser(int32(id)); err != nil {
-		sdk.FailOrError(c, 500, "Failed to delete user", err)
+		util.HttpFailOrErrorResponse(c, 500, "Failed to delete user", err)
 		return
 	}
-	sdk.Success(c, 200, "Success to delete", gin.H{
+	util.HttpSuccessResponse(c, 200, "Success to delete", gin.H{
 		"message": fmt.Sprintf("User %s successfully deleted", email),
 	})
 }
