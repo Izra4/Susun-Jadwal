@@ -121,7 +121,7 @@ func (uh *UserHandler) GetUserById(c *gin.Context) {
 		Nim:       result.Nim,
 		IDProdi:   result.IDProdi,
 	}
-
+	//a
 	util.HttpSuccessResponse(c, 200, "Succes to get data", fixResult)
 }
 
