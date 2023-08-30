@@ -140,9 +140,8 @@ func (kh *KrsHandler) UpdateKrs(c *gin.Context) {
 
 func (kh *KrsHandler) DeleteKrs(c *gin.Context) {
 	idStr := c.Param("id")
-	id, ok := strconv.Atoi(idStr)
+	id, ok := util.ErrorConvertStr(idStr, c)
 	if ok != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Failed to convert", ok)
 		return
 	}
 	if err := kh.krsService.DeleteKrs(int32(id)); err != nil {

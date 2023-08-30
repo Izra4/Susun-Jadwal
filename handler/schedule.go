@@ -4,7 +4,6 @@ import (
 	"Susun_Jadwal/models"
 	"Susun_Jadwal/service"
 	"Susun_Jadwal/util"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
@@ -112,81 +111,32 @@ func (sh *ScheduleHandler) GetScheduleByID(c *gin.Context) {
 
 func (sh *ScheduleHandler) UpdateSchedule(c *gin.Context) {
 	idStr := c.Param("id")
-	id, ok := strconv.Atoi(idStr)
+	id, ok := util.ErrorConvertStr(idStr, c)
 	if ok != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Failed to convert", ok)
 		return
 	}
-	data, err := sh.scheduleService.GetSchedulesById(int32(id))
-	if err != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
-		return
-	}
-	oldDay := data.Day
-	oldTime := data.Time
-	oldRoom := data.Room
-	oldClassId := data.ClassID
-
 	newDay := c.PostForm("day")
-	if newDay == "" {
-		newDay = oldDay
-	}
 	newTime := c.PostForm("time")
-	if newTime == "" {
-		newTime = oldTime
-	}
 	newRoom := c.PostForm("room")
-	if newRoom == "" {
-		newRoom = oldRoom
-	}
 	newClassIdStr := c.PostForm("classId")
-	newClassId := 0
 
-	if newClassIdStr == "" {
-		newClassId = int(oldClassId)
-	} else {
-		newClassId, ok = strconv.Atoi(newClassIdStr)
-		if ok != nil {
-			util.HttpFailOrErrorResponse(c, 500, "Failed to convert", err)
-			return
-		}
-	}
-	input := models.ScheduleUpdateReq{
-		Day:     newDay,
-		Time:    newTime,
-		Room:    newRoom,
-		ClassID: int32(newClassId),
-		ID:      int32(id),
-	}
-
-	if err = sh.scheduleService.UpdateSchedule(input); err != nil {
+	if err := sh.scheduleService.UpdateSchedule(c, int32(id), newDay, newTime, newRoom, newClassIdStr); err != nil {
 		util.HttpFailOrErrorResponse(c, 500, "Failed to update data", err)
 		return
 	}
-	util.HttpSuccessResponse(c, 200, "Succes to update data", input)
+	util.HttpSuccessResponse(c, 200, "Succes to update data", gin.H{})
 }
 
 func (sh *ScheduleHandler) DeleteSchedule(c *gin.Context) {
 	idStr := c.Param("id")
-	id, ok := strconv.Atoi(idStr)
+	id, ok := util.ErrorConvertStr(idStr, c)
 	if ok != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Failed to convert", ok)
 		return
 	}
-	result, err := sh.scheduleService.GetSchedulesById(int32(id))
-	if err != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
-		return
-	}
-	name := result.Room
-	time := result.Time
-	classId := result.ClassID
 
-	if err = sh.scheduleService.DeleteSchedule(int32(id)); err != nil {
+	if err := sh.scheduleService.DeleteSchedule(c, int32(id)); err != nil {
 		util.HttpFailOrErrorResponse(c, 500, "Failed to delete a class", err)
 		return
 	}
-	util.HttpSuccessResponse(c, 200, "Data deleted", gin.H{
-		"message": fmt.Sprintf("Class %s with time %s (class id: %d) is successfully deleted", name, time, classId),
-	})
+	util.HttpSuccessResponse(c, 200, "Data deleted", gin.H{})
 }

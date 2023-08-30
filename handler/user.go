@@ -4,7 +4,6 @@ import (
 	"Susun_Jadwal/models"
 	"Susun_Jadwal/service"
 	"Susun_Jadwal/util"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
@@ -61,56 +60,20 @@ func (uh *UserHandler) CreateUser(c *gin.Context) {
 
 func (uh *UserHandler) UpdateUser(c *gin.Context) {
 	idStr := c.Param("id")
-	id, ok := strconv.Atoi(idStr)
+	id, ok := util.ErrorConvertStr(idStr, c)
 	if ok != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Faileed to convert", ok)
 		return
-	}
-	result, err := uh.userService.GetUsersByID(int32(id))
-	if err != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
-		return
-	}
-	oldEmail := result.Email
-	oldName := result.Name
-	oldNim := result.Nim
-	oldIdProdi := result.IDProdi
-
-	newEmail := c.PostForm("email")
-	if newEmail == "" {
-		newEmail = oldEmail
-	}
-	newName := c.PostForm("name")
-	if newName == "" {
-		newName = oldName
-	}
-	newNim := c.PostForm("nim")
-	if newNim == "" {
-		newNim = oldNim
 	}
 	newIdProdiStr := c.PostForm("idProdi")
-	newIdProdi := 0
-	if newIdProdiStr == "" {
-		newIdProdi = int(oldIdProdi)
-	} else {
-		newIdProdi, ok = strconv.Atoi(newIdProdiStr)
-		if ok != nil {
-			util.HttpFailOrErrorResponse(c, 500, "Failed to convert", err)
-			return
-		}
-	}
-	input := models.UserUpdateReq{
-		Email:   newEmail,
-		Name:    newName,
-		Nim:     newNim,
-		IDProdi: int32(newIdProdi),
-		ID:      int32(id),
-	}
-	if err = uh.userService.UpdateUser(input); err != nil {
+	newNim := c.PostForm("nim")
+	newName := c.PostForm("name")
+	newEmail := c.PostForm("email")
+
+	if err := uh.userService.UpdateUser(c, id, newEmail, newName, newNim, newIdProdiStr); err != nil {
 		util.HttpFailOrErrorResponse(c, 500, "Failed to update data", err)
 		return
 	}
-	util.HttpSuccessResponse(c, 200, "Success to update data", input)
+	util.HttpSuccessResponse(c, 200, "Success to update data", gin.H{})
 }
 
 func (uh *UserHandler) GetAllUsers(c *gin.Context) {
@@ -138,14 +101,13 @@ func (uh *UserHandler) GetAllUsers(c *gin.Context) {
 
 func (uh *UserHandler) GetUserById(c *gin.Context) {
 	idStr := c.Param("id")
-	id, ok := strconv.Atoi(idStr)
+	id, ok := util.ErrorConvertStr(idStr, c)
 	if ok != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Failed to convert", ok)
 		return
 	}
 	result, err := uh.userService.GetUsersByID(int32(id))
 	if err != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
+		util.HttpFailOrErrorResponse(c, 404, "Failed to get data", err)
 		return
 	}
 
@@ -165,22 +127,14 @@ func (uh *UserHandler) GetUserById(c *gin.Context) {
 
 func (uh *UserHandler) DeleteUser(c *gin.Context) {
 	idStr := c.Param("id")
-	id, ok := strconv.Atoi(idStr)
+	id, ok := util.ErrorConvertStr(idStr, c)
 	if ok != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Failed to convert", ok)
 		return
 	}
-	result, err := uh.userService.GetUsersByID(int32(id))
-	if err != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
-		return
-	}
-	email := result.Email
-	if err = uh.userService.DeleteUser(int32(id)); err != nil {
+
+	if err := uh.userService.DeleteUser(c, int32(id)); err != nil {
 		util.HttpFailOrErrorResponse(c, 500, "Failed to delete user", err)
 		return
 	}
-	util.HttpSuccessResponse(c, 200, "Success to delete", gin.H{
-		"message": fmt.Sprintf("User %s successfully deleted", email),
-	})
+	util.HttpSuccessResponse(c, 200, "Success to delete", gin.H{})
 }

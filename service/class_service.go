@@ -40,7 +40,7 @@ func (c *classService) AddNewClass(ctx context.Context, arg models.ClassAddReq) 
 func (c *classService) DeleteClass(ctx context.Context, id int32) error {
 	_, err := c.repo.GetClassById(context.Background(), id)
 	if err != nil {
-		return nil
+		return err
 	}
 	return c.repo.DeleteClass(ctx, id)
 }
@@ -58,7 +58,7 @@ func (c *classService) UpdateClass(ctx context.Context, cgx *gin.Context, id int
 	result, err := c.repo.GetClassById(context.Background(), id)
 	if err != nil {
 		util.HttpFailOrErrorResponse(cgx, 500, "Data not found", err)
-		return nil
+		return err
 	}
 	ok := err
 	oldName := result.Name
@@ -74,7 +74,7 @@ func (c *classService) UpdateClass(ctx context.Context, cgx *gin.Context, id int
 		newMember, ok = util.ErrorConvertStr(newMemberStr, cgx)
 		if ok != nil {
 			util.HttpFailOrErrorResponse(cgx, 400, "Failed to convert", ok)
-			return nil
+			return err
 		}
 	}
 	newSubjectId := 0
@@ -83,7 +83,7 @@ func (c *classService) UpdateClass(ctx context.Context, cgx *gin.Context, id int
 	} else {
 		newSubjectId, ok = util.ErrorConvertStr(newSubjectIdStr, cgx)
 		if ok != nil {
-			return nil
+			return err
 		}
 	}
 	req := sqlc.UpdateClassParams{

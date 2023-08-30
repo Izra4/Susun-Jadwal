@@ -53,7 +53,7 @@ func (k *krsService) GetKrsByIDUser(userid int32) ([]sqlc.Kr, error) {
 func (k *krsService) UpdateKrs(cgx *gin.Context, newTotalsStr string, newUserIdStr string, id int32) error {
 	result, err := k.krsRepository.GetKrsByID(id)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	oldTotals := result.Totals
@@ -65,7 +65,7 @@ func (k *krsService) UpdateKrs(cgx *gin.Context, newTotalsStr string, newUserIdS
 	} else {
 		newTotals, ok = util.ErrorConvertStr(newTotalsStr, cgx)
 		if ok != nil {
-			return nil
+			return err
 		}
 	}
 
@@ -75,7 +75,7 @@ func (k *krsService) UpdateKrs(cgx *gin.Context, newTotalsStr string, newUserIdS
 	} else {
 		newUserId, ok = util.ErrorConvertStr(newUserIdStr, cgx)
 		if ok != nil {
-			return nil
+			return err
 		}
 	}
 	input := sqlc.UpdateKrsParams{

@@ -6,7 +6,6 @@ import (
 	"Susun_Jadwal/util"
 	"context"
 	"github.com/gin-gonic/gin"
-	"strconv"
 )
 
 type SubjectHandler struct {
@@ -114,71 +113,17 @@ func (sh *SubjectHandler) UpdateSubject(c *gin.Context) {
 	if ok != nil {
 		return
 	}
-	result, err := sh.subjectService.GetSubjectById(context.Background(), int32(id))
-	if err != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
-		return
-	}
-	oldName := result.Name
-	oldCurriculum := result.Curriculum
-	oldSks := result.Sks
-	oldIdProdi := result.IDProdi
-
 	newName := c.PostForm("name")
-	if newName == "" {
-		newName = oldName
-	}
 	newCurriculum := c.PostForm("curr")
-	if newCurriculum == "" {
-		newCurriculum = oldCurriculum
-	}
 	newSksStr := c.PostForm("sks")
-	newSks := 0
-	ok = err
-	if newSksStr == "" {
-		newSksStr = strconv.Itoa(int(oldSks))
-		newSks, ok = strconv.Atoi(newSksStr)
-		if ok != nil {
-			util.HttpFailOrErrorResponse(c, 500, "Failed to convert", err)
-			return
-		}
-	} else {
-		newSks, ok = util.ErrorConvertStr(newSksStr, c)
-		if ok != nil {
-			return
-		}
-	}
-
 	newIdProdiStr := c.PostForm("idProdi")
-	newIdProdi := 0
-	if newIdProdiStr == "" {
-		newIdProdiStr = strconv.Itoa(int(oldIdProdi))
-		newIdProdi, ok = strconv.Atoi(newIdProdiStr)
-		if ok != nil {
-			util.HttpFailOrErrorResponse(c, 500, "Failed to convert", err)
-			return
-		}
-	} else {
-		newIdProdi, ok = util.ErrorConvertStr(newIdProdiStr, c)
-		if ok != nil {
-			return
-		}
-	}
 
-	req := models.SubjectReq{
-		Name:       newName,
-		Curriculum: newCurriculum,
-		Sks:        newSks,
-		IdProdi:    newIdProdi,
-		Id:         id,
-	}
-
-	if err = sh.subjectService.UpdateSubject(context.Background(), req); err != nil {
+	if err := sh.subjectService.UpdateSubject(context.Background(), c, id, newName, newCurriculum, newSksStr, newIdProdiStr); err != nil {
 		util.HttpFailOrErrorResponse(c, 500, "Failed to update", err)
 		return
 	}
 
-	util.HttpSuccessResponse(c, 200, "Data updated", req)
+	util.HttpSuccessResponse(c, 200, "Data updated", gin.H{})
 }
 
 func (sh *SubjectHandler) DeleteSubject(c *gin.Context) {
@@ -187,16 +132,11 @@ func (sh *SubjectHandler) DeleteSubject(c *gin.Context) {
 	if ok != nil {
 		return
 	}
-	result, err := sh.subjectService.GetSubjectById(context.Background(), int32(id))
-	if err != nil {
-		util.HttpFailOrErrorResponse(c, 500, "Failed to get data", err)
-		return
-	}
-	if err = sh.subjectService.DeleteSubject(context.Background(), int32(id)); err != nil {
+	if err := sh.subjectService.DeleteSubject(context.Background(), c, int32(id)); err != nil {
 		util.HttpFailOrErrorResponse(c, 500, "Failed to delete", err)
 		return
 	}
 	util.HttpSuccessResponse(c, 200, "Data deleted", gin.H{
-		"message": "program study: " + result.Name + " successfully deleted",
+		"message": "program study successfully deleted",
 	})
 }
